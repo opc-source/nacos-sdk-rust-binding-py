@@ -1,0 +1,25 @@
+[package]
+name = "nacos-sdk-rust-binding-py"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "nacos_sdk_rust_binding_py"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.18"
+pyo3-asyncio = { version = "0.18", features = ["tokio-runtime"] }
+tokio = "1"
+
+nacos-sdk = { version = "0.3.0-pre", features = ["async"] }
+#nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", features = ["async"] }
+
+tracing-subscriber = { version = "0.3", features = ["default"] }
+#tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time"] } # occur `<unknown time>`
+tracing-appender = "0.2"
+lazy_static = "1.4.0"
+async-trait = "0.1"
