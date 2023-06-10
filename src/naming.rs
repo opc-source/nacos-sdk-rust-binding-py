@@ -1,7 +1,6 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::PyRuntimeError;
-use pyo3::types::PyFunction;
 use pyo3::{pyclass, pymethods, PyResult, Python};
 
 use std::sync::Arc;
@@ -191,7 +190,7 @@ impl NacosNamingClient {
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &PyFunction, // arg: Vec<NacosServiceInstance>
+        listener: &pyo3::PyAny, // todo PyFunction arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         /*
         self.inner
@@ -219,7 +218,7 @@ impl NacosNamingClient {
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &PyFunction, // arg: Vec<NacosServiceInstance>
+        listener: &pyo3::PyAny, // todo PyFunction arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         Ok(())
     }
