@@ -19,14 +19,11 @@ doc = false
 
 [dependencies]
 pyo3 = "0.18"
-pyo3-asyncio = { version = "0.18", features = ["tokio-runtime"] }
-tokio = "1"
 
-nacos-sdk = { version = "0.3.0-pre", features = ["async"] }
-#nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", features = ["async"] }
+nacos-sdk = { version = "0.3.0-pre", features = ["default"] }
+#nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", features = ["default"] }
 
 tracing-subscriber = { version = "0.3", features = ["default"] }
 #tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time"] } # occur `<unknown time>`
 tracing-appender = "0.2"
 lazy_static = "1.4.0"
-async-trait = "0.1"

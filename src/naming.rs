@@ -1,8 +1,8 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::PyRuntimeError;
-use pyo3::types::PyFunction;
-use pyo3::{pyclass, pymethods, PyResult};
+use pyo3::ffi::PyCFunction;
+use pyo3::{pyclass, pymethods, PyResult, Python};
 
 use std::sync::Arc;
 
@@ -57,7 +57,7 @@ impl NacosNamingClient {
 
     /// Register instance.
     /// If it fails, pay attention to err
-    pub async fn register_instance(
+    pub fn register_instance(
         &self,
         service_name: String,
         group: String,
@@ -69,13 +69,12 @@ impl NacosNamingClient {
                 Some(group),
                 transfer_ffi_instance_to_rust(&service_instance),
             )
-            .await
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
     /// Deregister instance.
     /// If it fails, pay attention to err
-    pub async fn deregister_instance(
+    pub fn deregister_instance(
         &self,
         service_name: String,
         group: String,
@@ -87,13 +86,12 @@ impl NacosNamingClient {
                 Some(group),
                 transfer_ffi_instance_to_rust(&service_instance),
             )
-            .await
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
     /// Batch register instance, improve interaction efficiency.
     /// If it fails, pay attention to err
-    pub async fn batch_register_instance(
+    pub fn batch_register_instance(
         &self,
         service_name: String,
         group: String,
@@ -106,13 +104,12 @@ impl NacosNamingClient {
 
         self.inner
             .batch_register_instance(service_name, Some(group), rust_instances)
-            .await
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
     /// Get all instances by service and group. default cluster=[], subscribe=true.
     /// If it fails, pay attention to err
-    pub async fn get_all_instances(
+    pub fn get_all_instances(
         &self,
         service_name: String,
         group: String,
@@ -127,7 +124,6 @@ impl NacosNamingClient {
                 clusters.unwrap_or_default(),
                 subscribe.unwrap_or(true),
             )
-            .await
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(rust_instances
@@ -138,7 +134,7 @@ impl NacosNamingClient {
 
     /// Select instances whether healthy or not. default cluster=[], subscribe=true, healthy=true.
     /// If it fails, pay attention to err
-    pub async fn select_instances(
+    pub fn select_instances(
         &self,
         service_name: String,
         group: String,
@@ -155,7 +151,6 @@ impl NacosNamingClient {
                 subscribe.unwrap_or(true),
                 healthy.unwrap_or(true),
             )
-            .await
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(rust_instances
@@ -166,7 +161,7 @@ impl NacosNamingClient {
 
     /// Select one healthy instance. default cluster=[], subscribe=true.
     /// If it fails, pay attention to err
-    pub async fn select_one_healthy_instance(
+    pub fn select_one_healthy_instance(
         &self,
         service_name: String,
         group: String,
@@ -181,7 +176,6 @@ impl NacosNamingClient {
                 clusters.unwrap_or_default(),
                 subscribe.unwrap_or(true),
             )
-            .await
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(transfer_rust_instance_to_ffi(&rust_instance))
@@ -189,12 +183,14 @@ impl NacosNamingClient {
 
     /// Add NacosNamingEventListener callback func, which listen the instance change.
     /// If it fails, pay attention to err
-    pub async fn subscribe(
+    #[pyo3(signature = (service_name, group, clusters, listener))]
+    pub fn subscribe(
         &self,
+        py: Python,
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: PyFunction, // arg: Vec<NacosServiceInstance>
+        listener: PyCFunction, // arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         self.inner
             .subscribe(
@@ -205,7 +201,6 @@ impl NacosNamingClient {
                     func: Arc::new(listener),
                 }),
             )
-            .await
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
         Ok(())
     }
@@ -213,19 +208,21 @@ impl NacosNamingClient {
     /// Remove NacosNamingEventListener callback func, but noop....
     /// The logic is not implemented internally, and only APIs are provided as compatibility.
     /// Users maybe do not need it? Not removing the subscription is not a big problem, Sorry!
-    pub async fn un_subscribe(
+    #[pyo3(signature = (service_name, group, clusters, listener))]
+    pub fn un_subscribe(
         &self,
-        _service_name: String,
-        _group: String,
-        _clusters: Option<Vec<String>>,
-        _listener: PyFunction, // arg: Vec<NacosServiceInstance>
+        py: Python,
+        service_name: String,
+        group: String,
+        clusters: Option<Vec<String>>,
+        listener: PyCFunction, // arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         Ok(())
     }
 }
 
 pub struct NacosNamingEventListener {
-    func: Arc<PyFunction>,
+    func: Arc<PyCFunction>,
 }
 
 impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
@@ -244,13 +241,12 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
             .collect();
 
         // todo call PyFunction with args
-        std::thread::spawn(move || {
-            let _ = listen.call(Ok(ffi_instances), None);
-        });
+        let _ = listen.call(ffi_instances, None);
     }
 }
 
 #[pyclass]
+#[derive(Clone)]
 pub struct NacosServiceInstance {
     /// Instance Id
     pub instance_id: Option<String>,

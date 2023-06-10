@@ -53,6 +53,7 @@ fn init_logger() -> &'static tracing_appender::non_blocking::WorkerGuard {
 }
 
 #[pyclass]
+#[derive(Clone)]
 pub struct ClientOptions {
     /// Server Addr, e.g. address:port[,address:port],...]
     pub server_addr: String,
