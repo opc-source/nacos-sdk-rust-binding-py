@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::PyRuntimeError;
-use pyo3::ffi::PyCFunction;
+use pyo3::types::PyFunction;
 use pyo3::{pyclass, pymethods, PyResult, Python};
 
 use std::sync::Arc;
@@ -184,14 +184,16 @@ impl NacosNamingClient {
     /// Add NacosNamingEventListener callback func, which listen the instance change.
     /// If it fails, pay attention to err
     #[pyo3(signature = (service_name, group, clusters, listener))]
+    #[allow(unused_variables)]
     pub fn subscribe(
         &self,
         py: Python,
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: PyCFunction, // arg: Vec<NacosServiceInstance>
+        listener: &PyFunction, // arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
+        /*
         self.inner
             .subscribe(
                 service_name,
@@ -202,6 +204,7 @@ impl NacosNamingClient {
                 }),
             )
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
+        */
         Ok(())
     }
 
@@ -209,26 +212,26 @@ impl NacosNamingClient {
     /// The logic is not implemented internally, and only APIs are provided as compatibility.
     /// Users maybe do not need it? Not removing the subscription is not a big problem, Sorry!
     #[pyo3(signature = (service_name, group, clusters, listener))]
+    #[allow(unused_variables)]
     pub fn un_subscribe(
         &self,
         py: Python,
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: PyCFunction, // arg: Vec<NacosServiceInstance>
+        listener: &PyFunction, // arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         Ok(())
     }
 }
 
+/*
 pub struct NacosNamingEventListener {
-    func: Arc<PyCFunction>,
+    func: Arc<PyFunction>,
 }
 
 impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
     fn event(&self, event: Arc<nacos_sdk::api::naming::NamingChangeEvent>) {
-        let listen = self.func.clone();
-
         if event.instances.is_none() {
             return;
         }
@@ -241,9 +244,10 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
             .collect();
 
         // todo call PyFunction with args
-        let _ = listen.call(ffi_instances, None);
+        let _ = self.func.call(ffi_instances, None);
     }
 }
+*/
 
 #[pyclass]
 #[derive(Clone)]
