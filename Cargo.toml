@@ -18,8 +18,8 @@ crate-type = ["cdylib"]
 doc = false
 
 [dependencies]
-pyo3 = "0.19"
-pyo3-asyncio = { version = "0.19", features = ["tokio-runtime"] }
+pyo3 = "0.18"
+pyo3-asyncio = { version = "0.18", features = ["tokio-runtime"] }
 tokio = "1"
 
 nacos-sdk = { version = "0.3.0-pre", features = ["async"] }

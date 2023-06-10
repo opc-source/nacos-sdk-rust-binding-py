@@ -3,7 +3,7 @@
 set -e
 
 # Setup virtualenv:
-python -m venv venv
+python3 -m venv venv
 # Activate venv:
 source venv/bin/activate
 
