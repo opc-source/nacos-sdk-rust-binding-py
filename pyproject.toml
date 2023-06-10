@@ -20,9 +20,9 @@ docs = ["pdoc"]
 test = ["behave"]
 
 [project.urls]
-Documentation = "https://github.com/opc-source/nacos-sdk-rust-binding-node.git"
-Homepage = "https://github.com/opc-source/nacos-sdk-rust-binding-node.git"
-Repository = "https://github.com/opc-source/nacos-sdk-rust-binding-node.git"
+Documentation = "https://github.com/opc-source/nacos-sdk-rust-binding-py.git"
+Homepage = "https://github.com/opc-source/nacos-sdk-rust-binding-py.git"
+Repository = "https://github.com/opc-source/nacos-sdk-rust-binding-py.git"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]

@@ -252,26 +252,66 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
 #[derive(Clone)]
 pub struct NacosServiceInstance {
     /// Instance Id
+    #[pyo3(set, get)]
     pub instance_id: Option<String>,
     /// Ip
+    #[pyo3(set, get)]
     pub ip: String,
     /// Port
+    #[pyo3(set, get)]
     pub port: i32,
     /// Weight, default 1.0
+    #[pyo3(set, get)]
     pub weight: Option<f64>,
     /// Healthy or not, default true
+    #[pyo3(set, get)]
     pub healthy: Option<bool>,
     /// Enabled ot not, default true
+    #[pyo3(set, get)]
     pub enabled: Option<bool>,
     /// Ephemeral or not, default true
+    #[pyo3(set, get)]
     pub ephemeral: Option<bool>,
     /// Cluster Name, default 'DEFAULT'
+    #[pyo3(set, get)]
     pub cluster_name: Option<String>,
     /// Service Name
+    #[pyo3(set, get)]
     pub service_name: Option<String>,
     /// Metadata, default '{}'
+    #[pyo3(set, get)]
     pub metadata: Option<std::collections::HashMap<String, String>>,
 }
+
+#[pymethods]
+impl NacosServiceInstance {
+    #[new]
+    pub fn new(
+        ip: String,
+        port: i32,
+        weight: Option<f64>,
+        healthy: Option<bool>,
+        enabled: Option<bool>,
+        ephemeral: Option<bool>,
+        cluster_name: Option<String>,
+        service_name: Option<String>,
+        metadata: Option<std::collections::HashMap<String, String>>,
+    ) -> PyResult<NacosServiceInstance> {
+        Ok(Self {
+            instance_id: None,
+            ip,
+            port,
+            weight,
+            healthy,
+            enabled,
+            ephemeral,
+            cluster_name,
+            service_name,
+            metadata,
+        })
+    }
+}
+
 
 fn transfer_ffi_instance_to_rust(
     ffi_instance: &NacosServiceInstance,

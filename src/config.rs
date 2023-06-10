@@ -136,16 +136,22 @@ impl NacosConfigClient {
 #[pyclass]
 pub struct NacosConfigResponse {
     /// Namespace/Tenant
+    #[pyo3(get)]
     pub namespace: String,
     /// DataId
+    #[pyo3(get)]
     pub data_id: String,
     /// Group
+    #[pyo3(get)]
     pub group: String,
     /// Content
+    #[pyo3(get)]
     pub content: String,
     /// Content's Type; e.g. json,properties,xml,html,text,yaml
+    #[pyo3(get)]
     pub content_type: String,
     /// Content's md5
+    #[pyo3(get)]
     pub md5: String,
 }
 

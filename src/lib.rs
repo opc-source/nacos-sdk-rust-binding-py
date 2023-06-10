@@ -56,14 +56,19 @@ fn init_logger() -> &'static tracing_appender::non_blocking::WorkerGuard {
 #[derive(Clone)]
 pub struct ClientOptions {
     /// Server Addr, e.g. address:port[,address:port],...]
+    #[pyo3(set, get)]
     pub server_addr: String,
     /// Namespace/Tenant
+    #[pyo3(set, get)]
     pub namespace: String,
     /// AppName
+    #[pyo3(set, get)]
     pub app_name: Option<String>,
     /// Username for Auth
+    #[pyo3(set, get)]
     pub username: Option<String>,
     /// Password for Auth
+    #[pyo3(set, get)]
     pub password: Option<String>,
 }
 
