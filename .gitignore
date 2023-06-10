@@ -27,3 +27,5 @@ test-crates/wheels/
 test-crates/targets/
 test-crates/venvs/
 
+# Generated docs
+docs

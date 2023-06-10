@@ -4,15 +4,22 @@ version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 publish = false
+authors = ["CheirshCai <785427346@qq.com>"]
+readme = "README.md"
+repository = "https://github.com/opc-source/nacos-sdk-rust-binding-py.git"
+description = "nacos-sdk-rust binding for Python with PyO3."
+categories = ["network-programming", "development-tools"]
+keywords = ["nacos", "ffi", "pyo3", "binding", "python"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "nacos_sdk_rust_binding_py"
 crate-type = ["cdylib"]
+doc = false
 
 [dependencies]
-pyo3 = "0.18"
-pyo3-asyncio = { version = "0.18", features = ["tokio-runtime"] }
+pyo3 = "0.19"
+pyo3-asyncio = { version = "0.19", features = ["tokio-runtime"] }
 tokio = "1"
 
 nacos-sdk = { version = "0.3.0-pre", features = ["async"] }

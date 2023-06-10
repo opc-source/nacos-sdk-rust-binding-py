@@ -5,6 +5,7 @@ build-backend = "maturin"
 [project]
 name = "nacos-sdk-rust-binding-py"
 requires-python = ">=3.7"
+keywords = ["nacos", "ffi", "pyo3", "binding", "python"]
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
