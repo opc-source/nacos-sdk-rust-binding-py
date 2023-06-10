@@ -6,10 +6,11 @@ Tip: nacos-sdk-python 仓库暂未提供 2.x gRPC 交互模式，为了能升级
 ## Installation
 
 ```bash
-pip install nacos_sdk_rust_binding_py
+pip install nacos-sdk-rust-binding-py
 ```
 
 # Usage
+- see https://pypi.org/project/nacos-sdk-rust-binding-py
 - TODO
 
 ## Development
@@ -49,7 +50,7 @@ Build API docs:
 
 ```shell
 maturin develop -E docs
-pdoc nacos_sdk_rust_binding_py
+pdoc nacos-sdk-rust-binding-py
 ```
 
 # License

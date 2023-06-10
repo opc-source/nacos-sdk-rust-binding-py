@@ -67,6 +67,26 @@ pub struct ClientOptions {
     pub password: Option<String>,
 }
 
+#[pymethods]
+impl ClientOptions {
+    #[new]
+    pub fn new(
+        server_addr: String,
+        namespace: String,
+        app_name: Option<String>,
+        username: Option<String>,
+        password: Option<String>,
+    ) -> PyResult<ClientOptions> {
+        Ok(Self {
+            server_addr,
+            namespace,
+            app_name,
+            username,
+            password,
+        })
+    }
+}
+
 mod config;
 pub use config::*;
 
