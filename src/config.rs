@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
-use pyo3::exceptions::PyRuntimeError;
-use pyo3::{pyclass, pymethods, PyResult, Python};
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObject};
 
 use std::sync::Arc;
 
@@ -95,25 +95,27 @@ impl NacosConfigClient {
     /// Add NacosConfigChangeListener callback func, which listen the config change.
     /// If it fails, pay attention to err
     #[pyo3(signature = (data_id, group, listener))]
-    #[allow(unused_variables)]
     pub fn add_listener(
         &self,
         py: Python,
         data_id: String,
         group: String,
-        listener: &pyo3::PyAny, // todo PyFunction arg: <NacosConfigResponse>
+        listener: &PyAny, // PyFunction arg: <NacosConfigResponse>
     ) -> PyResult<()> {
-        /*
+        if !listener.is_callable() {
+            return Err(PyErr::new::<PyValueError, _>(
+                "Arg `listener` must be a callable",
+            ));
+        }
         self.inner
             .add_listener(
                 data_id,
                 group,
                 Arc::new(NacosConfigChangeListener {
-                    func: Arc::new(listener),
+                    func: Arc::new(listener.to_object(py)),
                 }),
             )
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
-        */
         Ok(())
     }
 
@@ -127,7 +129,7 @@ impl NacosConfigClient {
         py: Python,
         data_id: String,
         group: String,
-        listener: &pyo3::PyAny, // todo PyFunction arg: <NacosConfigResponse>
+        listener: &PyAny, // PyFunction arg: <NacosConfigResponse>
     ) -> PyResult<()> {
         Ok(())
     }
@@ -155,20 +157,21 @@ pub struct NacosConfigResponse {
     pub md5: String,
 }
 
-/*
 pub struct NacosConfigChangeListener {
-    func: Arc<PyFunction>,
+    func: Arc<PyObject>,
 }
 
 impl nacos_sdk::api::config::ConfigChangeListener for NacosConfigChangeListener {
     fn notify(&self, config_resp: nacos_sdk::api::config::ConfigResponse) {
         let ffi_conf_resp = transfer_conf_resp(config_resp);
 
-        // todo call PyFunction with args
-        let _ = self.func.call(ffi_conf_resp, None);
+        // call PyFunction with args
+        let _ = Python::with_gil(|py| -> PyResult<()> {
+            let _ = self.func.call(py, (ffi_conf_resp,), None);
+            Ok(())
+        });
     }
 }
-*/
 
 fn transfer_conf_resp(config_resp: nacos_sdk::api::config::ConfigResponse) -> NacosConfigResponse {
     NacosConfigResponse {

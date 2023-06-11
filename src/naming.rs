@@ -1,7 +1,7 @@
 #![deny(clippy::all)]
 
-use pyo3::exceptions::PyRuntimeError;
-use pyo3::{pyclass, pymethods, PyResult, Python};
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObject};
 
 use std::sync::Arc;
 
@@ -183,27 +183,29 @@ impl NacosNamingClient {
     /// Add NacosNamingEventListener callback func, which listen the instance change.
     /// If it fails, pay attention to err
     #[pyo3(signature = (service_name, group, clusters, listener))]
-    #[allow(unused_variables)]
     pub fn subscribe(
         &self,
         py: Python,
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &pyo3::PyAny, // todo PyFunction arg: Vec<NacosServiceInstance>
+        listener: &PyAny, // PyFunction arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
-        /*
+        if !listener.is_callable() {
+            return Err(PyErr::new::<PyValueError, _>(
+                "Arg `listener` must be a callable",
+            ));
+        }
         self.inner
             .subscribe(
                 service_name,
                 Some(group),
                 clusters.unwrap_or_default(),
                 Arc::new(NacosNamingEventListener {
-                    func: Arc::new(listener),
+                    func: Arc::new(listener.to_object(py)),
                 }),
             )
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
-        */
         Ok(())
     }
 
@@ -218,15 +220,14 @@ impl NacosNamingClient {
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &pyo3::PyAny, // todo PyFunction arg: Vec<NacosServiceInstance>
+        listener: &PyAny, // PyFunction arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         Ok(())
     }
 }
 
-/*
 pub struct NacosNamingEventListener {
-    func: Arc<PyFunction>,
+    func: Arc<PyObject>,
 }
 
 impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
@@ -237,16 +238,18 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
 
         let rust_instances = event.instances.clone().unwrap();
 
-        let ffi_instances = rust_instances
+        let ffi_instances: Vec<NacosServiceInstance> = rust_instances
             .iter()
             .map(transfer_rust_instance_to_ffi)
             .collect();
 
-        // todo call PyFunction with args
-        let _ = self.func.call(ffi_instances, None);
+        // call PyFunction with args
+        let _ = Python::with_gil(|py| -> PyResult<()> {
+            let _ = self.func.call(py, (ffi_instances,), None);
+            Ok(())
+        });
     }
 }
-*/
 
 #[pyclass]
 #[derive(Clone)]
@@ -286,6 +289,7 @@ pub struct NacosServiceInstance {
 #[pymethods]
 impl NacosServiceInstance {
     #[new]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         ip: String,
         port: i32,
@@ -311,7 +315,6 @@ impl NacosServiceInstance {
         })
     }
 }
-
 
 fn transfer_ffi_instance_to_rust(
     ffi_instance: &NacosServiceInstance,
