@@ -15,6 +15,8 @@ pip install nacos-sdk-rust-binding-py
 
 **使用样例请看仓库内的 examples 目录**
 
+- 客户端日志请在目录 `$HOME/logs/nacos/` 查看
+
 ### Definition of ClientOptions
 
 ```python
