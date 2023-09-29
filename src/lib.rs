@@ -70,6 +70,9 @@ pub struct ClientOptions {
     /// Password for Auth
     #[pyo3(set, get)]
     pub password: Option<String>,
+    /// naming push_empty_protection, default true
+    #[pyo3(set, get)]
+    pub naming_push_empty_protection: Option<bool>,
 }
 
 #[pymethods]
@@ -81,6 +84,7 @@ impl ClientOptions {
         app_name: Option<String>,
         username: Option<String>,
         password: Option<String>,
+        naming_push_empty_protection: Option<bool>,
     ) -> PyResult<ClientOptions> {
         Ok(Self {
             server_addr,
@@ -88,6 +92,7 @@ impl ClientOptions {
             app_name,
             username,
             password,
+            naming_push_empty_protection,
         })
     }
 }

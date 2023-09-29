@@ -26,6 +26,9 @@ impl NacosNamingClient {
                 client_options
                     .app_name
                     .unwrap_or(nacos_sdk::api::constants::UNKNOWN.to_string()),
+            )
+            .naming_push_empty_protection(
+                client_options.naming_push_empty_protection.unwrap_or(true),
             );
 
         // need enable_auth_plugin_http with username & password
