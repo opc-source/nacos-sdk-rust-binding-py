@@ -18,7 +18,7 @@ pip install nacos-sdk-rust-binding-py
 环境变量 `NACOS_CLIENT_LOGGER_LEVEL=INFO` 可设置日志打印级别，默认 INFO
 - 客户端日志请在目录 `$HOME/logs/nacos/` 查看
 
-环境变量 `NACOS_CLIENT_COMMON_THREAD_CORES=4` 可设置客户端核心线程数，默认是 CPU 数目 num_cpus
+环境变量 `NACOS_CLIENT_COMMON_THREAD_CORES=4` 可设置客户端核心线程数，默认是 CPU 数目 1
 
 环境变量 `ENV_NACOS_CLIENT_NAMING_PUSH_EMPTY_PROTECTION=false` 可关闭 Naming 防推空保护，默认 true
 
