@@ -29,7 +29,8 @@ impl NacosNamingClient {
             )
             .naming_push_empty_protection(
                 client_options.naming_push_empty_protection.unwrap_or(true),
-            );
+            )
+            .naming_load_cache_at_start(client_options.naming_load_cache_at_start.unwrap_or(false));
 
         // need enable_auth_plugin_http with username & password
         let is_enable_auth = client_options.username.is_some() && client_options.password.is_some();

@@ -73,6 +73,9 @@ pub struct ClientOptions {
     /// naming push_empty_protection, default true
     #[pyo3(set, get)]
     pub naming_push_empty_protection: Option<bool>,
+    /// naming load_cache_at_start, default false
+    #[pyo3(set, get)]
+    pub naming_load_cache_at_start: Option<bool>,
 }
 
 #[pymethods]
@@ -85,6 +88,7 @@ impl ClientOptions {
         username: Option<String>,
         password: Option<String>,
         naming_push_empty_protection: Option<bool>,
+        naming_load_cache_at_start: Option<bool>,
     ) -> PyResult<ClientOptions> {
         Ok(Self {
             server_addr,
@@ -93,6 +97,7 @@ impl ClientOptions {
             username,
             password,
             naming_push_empty_protection,
+            naming_load_cache_at_start,
         })
     }
 }

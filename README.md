@@ -46,6 +46,9 @@ class ClientOptions:
     # naming push_empty_protection, default true
     #[pyo3(set, get)]
     naming_push_empty_protection: Option<bool>,
+    # naming load_cache_at_start, default false
+    #[pyo3(set, get)]
+    naming_load_cache_at_start: Option<bool>,
 
     # Init
     def __init__(self, server_addr, namespace, app_name, username, password):
