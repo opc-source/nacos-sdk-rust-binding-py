@@ -9,9 +9,12 @@ class Test(unittest.TestCase):
     def test_ClientOptions(self):
         options = ClientOptions(server_addr="127.0.0.1:8848", namespace="")
 
+        self.assert_ClientOptions_pickling(options)
+
+    @staticmethod
+    def assert_ClientOptions_pickling(options: ClientOptions):
         options_pickle = pickle.dumps(options)
         options_unpickle: ClientOptions = pickle.loads(options_pickle)
-
         assert options.server_addr == options_unpickle.server_addr
         assert options.namespace == options_unpickle.namespace
         assert options.app_name == options_unpickle.app_name
@@ -20,12 +23,43 @@ class Test(unittest.TestCase):
         assert options.naming_load_cache_at_start == options_unpickle.naming_load_cache_at_start
         assert options.naming_push_empty_protection == options_unpickle.naming_push_empty_protection
 
+    def test_ClientOptions_all_fields(self):
+        options = ClientOptions(
+            server_addr="127.0.0.1:8848",
+            namespace="namespace",
+            app_name="app_name",
+            username="username",
+            password="password",
+            naming_load_cache_at_start=True,
+            naming_push_empty_protection=True
+        )
+
+        self.assert_ClientOptions_pickling(options)
+
     def test_NacosServiceInstance(self):
         ins = NacosServiceInstance(ip="127.0.0.1", port=8848)
 
+        self.assert_NacosServiceInstance_pickling(ins)
+
+    def test_NacosServiceInstance_all_fields(self):
+        ins = NacosServiceInstance(
+            ip="127.0.0.1",
+            port=8848,
+            weight=1.0,
+            healthy=True,
+            enabled=True,
+            ephemeral=False,
+            cluster_name="cluster_name",
+            service_name="service_name",
+            metadata={"key": "value"}
+        )
+
+        self.assert_NacosServiceInstance_pickling(ins)
+
+    @staticmethod
+    def assert_NacosServiceInstance_pickling(ins: NacosServiceInstance):
         ins_pickle = pickle.dumps(ins)
         ins_unpickle: NacosServiceInstance = pickle.loads(ins_pickle)
-
         assert ins.instance_id == ins_unpickle.instance_id
         assert ins.ip == ins_unpickle.ip
         assert ins.port == ins_unpickle.port
