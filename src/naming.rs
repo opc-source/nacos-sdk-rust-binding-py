@@ -1,9 +1,12 @@
 #![deny(clippy::all)]
 
-use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObject};
-
 use std::sync::Arc;
+
+use bincode::{deserialize, serialize};
+use pyo3::{PyAny, pyclass, PyErr, pymethods, PyObject, PyResult, Python, ToPyObject};
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use pyo3::types::PyBytes;
+use serde::{Deserialize, Serialize};
 
 /// Client api of Nacos Naming.
 #[pyclass]
@@ -256,7 +259,7 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
 }
 
 #[pyclass]
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct NacosServiceInstance {
     /// Instance Id
     #[pyo3(set, get)]
@@ -317,6 +320,41 @@ impl NacosServiceInstance {
             service_name,
             metadata,
         })
+    }
+
+    pub fn __setstate__(&mut self, state: &PyBytes) -> PyResult<()> {
+        *self = deserialize(state.as_bytes()).unwrap();
+        Ok(())
+    }
+
+    pub fn __getstate__<'py>(&self, py: Python<'py>) -> PyResult<&'py PyBytes> {
+        Ok(PyBytes::new(py, &serialize(&self).unwrap()))
+    }
+
+    pub fn __getnewargs__(
+        &self,
+    ) -> PyResult<(
+        String,
+        i32,
+        Option<f64>,
+        Option<bool>,
+        Option<bool>,
+        Option<bool>,
+        Option<String>,
+        Option<String>,
+        Option<std::collections::HashMap<String, String>>,
+    )> {
+        Ok((
+            self.ip.clone(),
+            self.port,
+            self.weight,
+            self.healthy,
+            self.enabled,
+            self.ephemeral,
+            self.cluster_name.clone(),
+            self.service_name.clone(),
+            self.metadata.clone(),
+        ))
     }
 }
 
