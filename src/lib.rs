@@ -1,4 +1,7 @@
 use pyo3::prelude::*;
+use pyo3::types::{PyBytes};
+use serde::{Serialize, Deserialize};
+use bincode::{serialize, deserialize};
 
 /// Formats the sum of two numbers as string.
 #[pyfunction]
@@ -53,7 +56,7 @@ fn init_logger() -> &'static tracing_appender::non_blocking::WorkerGuard {
 }
 
 #[pyclass]
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ClientOptions {
     /// Server Addr, e.g. address:port[,address:port],...]
     #[pyo3(set, get)]
@@ -99,6 +102,37 @@ impl ClientOptions {
             naming_push_empty_protection,
             naming_load_cache_at_start,
         })
+    }
+
+    pub fn __setstate__(&mut self, state: &PyBytes) -> PyResult<()> {
+        *self = deserialize(state.as_bytes()).unwrap();
+        Ok(())
+    }
+
+    pub fn __getstate__<'py>(&self, py: Python<'py>) -> PyResult<&'py PyBytes> {
+        Ok(PyBytes::new(py, &serialize(&self).unwrap()))
+    }
+
+    /// Used for enabling python pickle library to serialize/deserialize this struct
+    /// ref: https://github.com/PyO3/pyo3/issues/100#issuecomment-1220672112
+    pub fn __getnewargs__(&self)
+        -> PyResult<(
+            String,
+            String,
+            Option<String>,
+            Option<String>,
+            Option<String>,
+            Option<bool>,
+            Option<bool>
+        )> {
+            Ok((self.server_addr.clone(),
+                self.namespace.clone(),
+                self.app_name.clone(),
+                self.username.clone(),
+                self.password.clone(),
+                self.naming_push_empty_protection,
+                self.naming_load_cache_at_start
+            ))
     }
 }
 
