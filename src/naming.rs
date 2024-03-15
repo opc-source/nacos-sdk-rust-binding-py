@@ -9,7 +9,7 @@ use pyo3::types::PyBytes;
 use serde::{Deserialize, Serialize};
 
 /// Client api of Nacos Naming.
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 pub struct NacosNamingClient {
     inner: Arc<dyn nacos_sdk::api::naming::NamingService + Send + Sync + 'static>,
 }

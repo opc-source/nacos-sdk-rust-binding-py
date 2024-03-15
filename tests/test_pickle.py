@@ -1,7 +1,7 @@
 import pickle
 import unittest
 
-from nacos_sdk_rust_binding_py import ClientOptions, NacosServiceInstance
+from nacos_sdk_rust_binding_py import ClientOptions, NacosServiceInstance, NacosConfigResponse
 
 
 class Test(unittest.TestCase):
@@ -36,3 +36,23 @@ class Test(unittest.TestCase):
         assert ins.cluster_name == ins_unpickle.cluster_name
         assert ins.service_name == ins_unpickle.service_name
         assert ins.metadata == ins_unpickle.metadata
+
+    def test_NacosConfigResponse(self):
+        resp = NacosConfigResponse(
+            namespace="namespace",
+            data_id="data_id",
+            group="group",
+            content="content",
+            content_type="content_type",
+            md5="md5",
+        )
+
+        resp_pickle = pickle.dumps(resp)
+        resp_unpickle: NacosConfigResponse = pickle.loads(resp_pickle)
+
+        assert resp.namespace == resp_unpickle.namespace
+        assert resp.data_id == resp_unpickle.data_id
+        assert resp.group == resp_unpickle.group
+        assert resp.content == resp_unpickle.content
+        assert resp.content_type == resp_unpickle.content_type
+        assert resp.md5 == resp_unpickle.md5

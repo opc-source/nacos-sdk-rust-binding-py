@@ -1,12 +1,15 @@
 #![deny(clippy::all)]
 
-use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObject};
-
 use std::sync::Arc;
 
+use bincode::{deserialize, serialize};
+use pyo3::{PyAny, pyclass, PyErr, pymethods, PyObject, PyResult, Python, ToPyObject};
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use pyo3::types::PyBytes;
+use serde::{Deserialize, Serialize};
+
 /// Client api of Nacos Config.
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 pub struct NacosConfigClient {
     inner: Arc<dyn nacos_sdk::api::config::ConfigService + Send + Sync + 'static>,
 }
@@ -135,7 +138,8 @@ impl NacosConfigClient {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
+#[derive(Deserialize, Serialize)]
 pub struct NacosConfigResponse {
     /// Namespace/Tenant
     #[pyo3(get)]
@@ -157,6 +161,46 @@ pub struct NacosConfigResponse {
     pub md5: String,
 }
 
+#[pymethods]
+impl NacosConfigResponse {
+    #[new]
+    pub fn new(
+        namespace: String,
+        data_id: String,
+        group: String,
+        content: String,
+        content_type: String,
+        md5: String,
+    ) -> PyResult<NacosConfigResponse> {
+        Ok(Self {
+            namespace,
+            data_id,
+            group,
+            content,
+            content_type,
+            md5,
+        })
+    }
+
+    pub fn __setstate__(&mut self, state: &PyBytes) -> PyResult<()> {
+        *self = deserialize(state.as_bytes()).unwrap();
+        Ok(())
+    }
+
+    pub fn __getstate__<'py>(&self, py: Python<'py>) -> PyResult<&'py PyBytes> {
+        Ok(PyBytes::new(py, &serialize(&self).unwrap()))
+    }
+    pub fn __getnewargs__(&self) -> PyResult<(String, String, String, String, String, String)> {
+        Ok((
+            self.namespace.clone(),
+            self.data_id.clone(),
+            self.group.clone(),
+            self.content.clone(),
+            self.content_type.clone(),
+            self.md5.clone(),
+        ))
+    }
+}
 pub struct NacosConfigChangeListener {
     func: Arc<PyObject>,
 }
