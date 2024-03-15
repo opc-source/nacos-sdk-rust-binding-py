@@ -258,7 +258,7 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 #[derive(Clone, Serialize, Deserialize)]
 pub struct NacosServiceInstance {
     /// Instance Id

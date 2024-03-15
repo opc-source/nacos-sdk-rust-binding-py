@@ -55,7 +55,8 @@ fn init_logger() -> &'static tracing_appender::non_blocking::WorkerGuard {
     &LOG_GUARD
 }
 
-#[pyclass]
+/// (module=...) ref: https://github.com/rth/vtext/pull/73#discussion_r439410778
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ClientOptions {
     /// Server Addr, e.g. address:port[,address:port],...]
