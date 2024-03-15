@@ -19,6 +19,9 @@ doc = false
 
 [dependencies]
 pyo3 = "0.18"
+bincode = "1.3"
+serde = { version = "1", features = ["derive"] }
+
 
 nacos-sdk = { version = "0.3.5", features = ["default"] }
 #nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", features = ["default"] }
