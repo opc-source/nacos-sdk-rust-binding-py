@@ -6,7 +6,7 @@ use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObj
 use std::sync::Arc;
 
 /// Client api of Nacos Naming.
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 pub struct NacosNamingClient {
     inner: Arc<dyn nacos_sdk::api::naming::NamingService + Send + Sync + 'static>,
 }
@@ -15,7 +15,7 @@ pub struct NacosNamingClient {
 impl NacosNamingClient {
     /// Build a Naming Client.
     #[new]
-    pub fn new(client_options: crate::ClientOptions) -> PyResult<NacosNamingClient> {
+    pub fn new(client_options: crate::ClientOptions) -> PyResult<Self> {
         // print to console or file
         let _ = crate::init_logger();
 
@@ -66,12 +66,12 @@ impl NacosNamingClient {
         group: String,
         service_instance: NacosServiceInstance,
     ) -> PyResult<()> {
-        self.inner
-            .register_instance(
-                service_name,
-                Some(group),
-                transfer_ffi_instance_to_rust(&service_instance),
-            )
+        let future = self.inner.register_instance(
+            service_name,
+            Some(group),
+            transfer_ffi_instance_to_rust(&service_instance),
+        );
+        futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -83,12 +83,12 @@ impl NacosNamingClient {
         group: String,
         service_instance: NacosServiceInstance,
     ) -> PyResult<()> {
-        self.inner
-            .deregister_instance(
-                service_name,
-                Some(group),
-                transfer_ffi_instance_to_rust(&service_instance),
-            )
+        let future = self.inner.deregister_instance(
+            service_name,
+            Some(group),
+            transfer_ffi_instance_to_rust(&service_instance),
+        );
+        futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -105,8 +105,10 @@ impl NacosNamingClient {
             .map(transfer_ffi_instance_to_rust)
             .collect();
 
-        self.inner
-            .batch_register_instance(service_name, Some(group), rust_instances)
+        let future = self
+            .inner
+            .batch_register_instance(service_name, Some(group), rust_instances);
+        futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -119,14 +121,13 @@ impl NacosNamingClient {
         clusters: Option<Vec<String>>,
         subscribe: Option<bool>,
     ) -> PyResult<Vec<NacosServiceInstance>> {
-        let rust_instances = self
-            .inner
-            .get_all_instances(
-                service_name,
-                Some(group),
-                clusters.unwrap_or_default(),
-                subscribe.unwrap_or(true),
-            )
+        let future = self.inner.get_all_instances(
+            service_name,
+            Some(group),
+            clusters.unwrap_or_default(),
+            subscribe.unwrap_or(true),
+        );
+        let rust_instances = futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(rust_instances
@@ -145,15 +146,14 @@ impl NacosNamingClient {
         subscribe: Option<bool>,
         healthy: Option<bool>,
     ) -> PyResult<Vec<NacosServiceInstance>> {
-        let rust_instances = self
-            .inner
-            .select_instances(
-                service_name,
-                Some(group),
-                clusters.unwrap_or_default(),
-                subscribe.unwrap_or(true),
-                healthy.unwrap_or(true),
-            )
+        let future = self.inner.select_instances(
+            service_name,
+            Some(group),
+            clusters.unwrap_or_default(),
+            subscribe.unwrap_or(true),
+            healthy.unwrap_or(true),
+        );
+        let rust_instances = futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(rust_instances
@@ -171,14 +171,13 @@ impl NacosNamingClient {
         clusters: Option<Vec<String>>,
         subscribe: Option<bool>,
     ) -> PyResult<NacosServiceInstance> {
-        let rust_instance = self
-            .inner
-            .select_one_healthy_instance(
-                service_name,
-                Some(group),
-                clusters.unwrap_or_default(),
-                subscribe.unwrap_or(true),
-            )
+        let future = self.inner.select_one_healthy_instance(
+            service_name,
+            Some(group),
+            clusters.unwrap_or_default(),
+            subscribe.unwrap_or(true),
+        );
+        let rust_instance = futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(transfer_rust_instance_to_ffi(&rust_instance))
@@ -200,15 +199,15 @@ impl NacosNamingClient {
                 "Arg `listener` must be a callable",
             ));
         }
-        self.inner
-            .subscribe(
-                service_name,
-                Some(group),
-                clusters.unwrap_or_default(),
-                Arc::new(NacosNamingEventListener {
-                    func: Arc::new(listener.to_object(py)),
-                }),
-            )
+        let future = self.inner.subscribe(
+            service_name,
+            Some(group),
+            clusters.unwrap_or_default(),
+            Arc::new(NacosNamingEventListener {
+                func: Arc::new(listener.to_object(py)),
+            }),
+        );
+        futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
         Ok(())
     }
@@ -230,8 +229,8 @@ impl NacosNamingClient {
     }
 }
 
-pub struct NacosNamingEventListener {
-    func: Arc<PyObject>,
+pub(crate) struct NacosNamingEventListener {
+    pub(crate) func: Arc<PyObject>,
 }
 
 impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
@@ -255,7 +254,7 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 #[derive(Clone)]
 pub struct NacosServiceInstance {
     /// Instance Id
@@ -320,7 +319,7 @@ impl NacosServiceInstance {
     }
 }
 
-fn transfer_ffi_instance_to_rust(
+pub(crate) fn transfer_ffi_instance_to_rust(
     ffi_instance: &NacosServiceInstance,
 ) -> nacos_sdk::api::naming::ServiceInstance {
     nacos_sdk::api::naming::ServiceInstance {
@@ -337,7 +336,7 @@ fn transfer_ffi_instance_to_rust(
     }
 }
 
-fn transfer_rust_instance_to_ffi(
+pub(crate) fn transfer_rust_instance_to_ffi(
     rust_instance: &nacos_sdk::api::naming::ServiceInstance,
 ) -> NacosServiceInstance {
     NacosServiceInstance {

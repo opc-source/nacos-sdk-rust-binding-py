@@ -6,16 +6,16 @@ use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObj
 use std::sync::Arc;
 
 /// Client api of Nacos Config.
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 pub struct NacosConfigClient {
-    inner: Arc<dyn nacos_sdk::api::config::ConfigService + Send + Sync + 'static>,
+    pub(crate) inner: Arc<dyn nacos_sdk::api::config::ConfigService + Send + Sync + 'static>,
 }
 
 #[pymethods]
 impl NacosConfigClient {
     /// Build a Config Client.
     #[new]
-    pub fn new(client_options: crate::ClientOptions) -> PyResult<NacosConfigClient> {
+    pub fn new(client_options: crate::ClientOptions) -> PyResult<Self> {
         // print to console or file
         let _ = crate::init_logger();
 
@@ -64,9 +64,8 @@ impl NacosConfigClient {
     /// Get NacosConfigResponse.
     /// If it fails, pay attention to err
     pub fn get_config_resp(&self, data_id: String, group: String) -> PyResult<NacosConfigResponse> {
-        let config_resp = self
-            .inner
-            .get_config(data_id, group)
+        let future = self.inner.get_config(data_id, group);
+        let config_resp = futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
         Ok(transfer_conf_resp(config_resp))
     }
@@ -79,16 +78,16 @@ impl NacosConfigClient {
         group: String,
         content: String,
     ) -> PyResult<bool> {
-        self.inner
-            .publish_config(data_id, group, content, None)
+        let future = self.inner.publish_config(data_id, group, content, None);
+        futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
     /// Remove config.
     /// If it fails, pay attention to err
     pub fn remove_config(&self, data_id: String, group: String) -> PyResult<bool> {
-        self.inner
-            .remove_config(data_id, group)
+        let future = self.inner.remove_config(data_id, group);
+        futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -107,14 +106,14 @@ impl NacosConfigClient {
                 "Arg `listener` must be a callable",
             ));
         }
-        self.inner
-            .add_listener(
-                data_id,
-                group,
-                Arc::new(NacosConfigChangeListener {
-                    func: Arc::new(listener.to_object(py)),
-                }),
-            )
+        let future = self.inner.add_listener(
+            data_id,
+            group,
+            Arc::new(NacosConfigChangeListener {
+                func: Arc::new(listener.to_object(py)),
+            }),
+        );
+        futures::executor::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
         Ok(())
     }
@@ -135,7 +134,7 @@ impl NacosConfigClient {
     }
 }
 
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 pub struct NacosConfigResponse {
     /// Namespace/Tenant
     #[pyo3(get)]
@@ -157,8 +156,8 @@ pub struct NacosConfigResponse {
     pub md5: String,
 }
 
-pub struct NacosConfigChangeListener {
-    func: Arc<PyObject>,
+pub(crate) struct NacosConfigChangeListener {
+    pub(crate) func: Arc<PyObject>,
 }
 
 impl nacos_sdk::api::config::ConfigChangeListener for NacosConfigChangeListener {
@@ -173,7 +172,9 @@ impl nacos_sdk::api::config::ConfigChangeListener for NacosConfigChangeListener 
     }
 }
 
-fn transfer_conf_resp(config_resp: nacos_sdk::api::config::ConfigResponse) -> NacosConfigResponse {
+pub(crate) fn transfer_conf_resp(
+    config_resp: nacos_sdk::api::config::ConfigResponse,
+) -> NacosConfigResponse {
     NacosConfigResponse {
         namespace: config_resp.namespace().to_string(),
         data_id: config_resp.data_id().to_string(),

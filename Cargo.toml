@@ -1,6 +1,6 @@
 [package]
 name = "nacos-sdk-rust-binding-py"
-version = "0.3.5"
+version = "0.3.6-ALPHA"
 edition = "2021"
 license = "Apache-2.0"
 publish = false
@@ -18,10 +18,13 @@ crate-type = ["cdylib"]
 doc = false
 
 [dependencies]
-pyo3 = "0.18"
+pyo3 = "0.20"
+pyo3-asyncio = { version = "0.20", features = ["tokio-runtime"] }
+# for block api
+futures = { version = "0.3", default-features = false, features = [] }
 
-nacos-sdk = { version = "0.3.5", features = ["default"] }
-#nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", features = ["default"] }
+nacos-sdk = { version = "0.3.5", features = ["async"] }
+#nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", features = ["async"] }
 
 tracing-subscriber = { version = "0.3", features = ["default"] }
 #tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time"] } # occur `<unknown time>`

@@ -15,6 +15,9 @@ fn nacos_sdk_rust_binding_py(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<NacosConfigResponse>()?;
     m.add_class::<NacosNamingClient>()?;
     m.add_class::<NacosServiceInstance>()?;
+    // Async Client api
+    m.add_class::<AsyncNacosConfigClient>()?;
+    m.add_class::<AsyncNacosNamingClient>()?;
     Ok(())
 }
 
@@ -52,7 +55,7 @@ fn init_logger() -> &'static tracing_appender::non_blocking::WorkerGuard {
     &LOG_GUARD
 }
 
-#[pyclass]
+#[pyclass(module = "nacos_sdk_rust_binding_py")]
 #[derive(Clone)]
 pub struct ClientOptions {
     /// Server Addr, e.g. address:port[,address:port],...]
@@ -107,3 +110,9 @@ pub use config::*;
 
 mod naming;
 pub use naming::*;
+
+mod async_config;
+pub use async_config::*;
+
+mod async_naming;
+pub use async_naming::*;
