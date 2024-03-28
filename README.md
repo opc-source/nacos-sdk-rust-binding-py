@@ -14,6 +14,10 @@ pip install nacos-sdk-rust-binding-py
 ## Usage
 
 **使用样例请看仓库内的 examples 目录**
+- Block api: [examples/naming.py](examples/naming.py) / [examples/config.py](examples/config.py)
+- Async api: [examples/async_naming.py](examples/async_naming.py) / [examples/async_config.py](examples/async_config.py)
+
+**其它设置**
 
 环境变量 `NACOS_CLIENT_LOGGER_LEVEL=INFO` 可设置日志打印级别，默认 INFO
 - 客户端日志请在目录 `$HOME/logs/nacos/` 查看
@@ -53,7 +57,7 @@ class ClientOptions:
     # Init
     def __init__(self, server_addr, namespace, app_name, username, password):
         self.server_addr = server_addr
-        self.server_addr = namespace
+        self.namespace = namespace
         self.app_name = app_name
         self.username = username
         self.password = password
