@@ -1,6 +1,6 @@
 [package]
 name = "nacos-sdk-rust-binding-py"
-version = "0.3.6"
+version = "0.3.7-ALPHA"
 edition = "2021"
 license = "Apache-2.0"
 publish = false
