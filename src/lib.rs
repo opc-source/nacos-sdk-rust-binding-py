@@ -67,12 +67,21 @@ pub struct ClientOptions {
     /// AppName
     #[pyo3(set, get)]
     pub app_name: Option<String>,
-    /// Username for Auth
+    /// Username for Auth, Login by Http with Token
     #[pyo3(set, get)]
     pub username: Option<String>,
-    /// Password for Auth
+    /// Password for Auth, Login by Http with Token
     #[pyo3(set, get)]
     pub password: Option<String>,
+    /// Access_Key for Auth, Login by Aliyun Ram
+    #[pyo3(set, get)]
+    pub access_key: Option<String>,
+    /// Access_Secret for Auth, Login by Aliyun Ram
+    #[pyo3(set, get)]
+    pub access_secret: Option<String>,
+    /// Signature_Region_Id for Auth, Login by Aliyun Ram
+    #[pyo3(set, get)]
+    pub signature_region_id: Option<String>,
     /// naming push_empty_protection, default true
     #[pyo3(set, get)]
     pub naming_push_empty_protection: Option<bool>,
@@ -84,12 +93,16 @@ pub struct ClientOptions {
 #[pymethods]
 impl ClientOptions {
     #[new]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         server_addr: String,
         namespace: String,
         app_name: Option<String>,
         username: Option<String>,
         password: Option<String>,
+        access_key: Option<String>,
+        access_secret: Option<String>,
+        signature_region_id: Option<String>,
         naming_push_empty_protection: Option<bool>,
         naming_load_cache_at_start: Option<bool>,
     ) -> PyResult<ClientOptions> {
@@ -99,6 +112,9 @@ impl ClientOptions {
             app_name,
             username,
             password,
+            access_key,
+            access_secret,
+            signature_region_id,
             naming_push_empty_protection,
             naming_load_cache_at_start,
         })

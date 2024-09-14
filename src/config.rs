@@ -29,18 +29,29 @@ impl NacosConfigClient {
             );
 
         // need enable_auth_plugin_http with username & password
-        let is_enable_auth = client_options.username.is_some() && client_options.password.is_some();
+        let is_enable_auth_http =
+            client_options.username.is_some() && client_options.password.is_some();
+        // need enable_auth_plugin_aliyun with access_key & access_secret
+        let is_enable_auth_aliyun =
+            client_options.access_key.is_some() && client_options.access_secret.is_some();
 
-        let props = if is_enable_auth {
+        let props = if is_enable_auth_http {
             props
                 .auth_username(client_options.username.unwrap())
                 .auth_password(client_options.password.unwrap())
+        } else if is_enable_auth_aliyun {
+            props
+                .auth_access_key(client_options.access_key.unwrap())
+                .auth_access_secret(client_options.access_secret.unwrap())
+                .auth_signature_region_id(client_options.signature_region_id.unwrap())
         } else {
             props
         };
 
-        let config_service_builder = if is_enable_auth {
+        let config_service_builder = if is_enable_auth_http {
             nacos_sdk::api::config::ConfigServiceBuilder::new(props).enable_auth_plugin_http()
+        } else if is_enable_auth_aliyun {
+            nacos_sdk::api::config::ConfigServiceBuilder::new(props).enable_auth_plugin_aliyun()
         } else {
             nacos_sdk::api::config::ConfigServiceBuilder::new(props)
         };

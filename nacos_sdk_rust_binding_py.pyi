@@ -8,6 +8,9 @@ class ClientOptions:
         app_name: Optional[str],
         username: Optional[str],
         password: Optional[str],
+        access_key: Optional[str],
+        access_secret: Optional[str],
+        signature_region_id: Optional[str],
         naming_push_empty_protection: Optional[bool],
         naming_load_cache_at_start: Optional[bool],
     ) -> None: ...
