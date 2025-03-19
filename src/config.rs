@@ -1,14 +1,14 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObject};
+use pyo3::{PyAny, PyErr, PyObject, PyResult, Python, ToPyObject, pyclass, pymethods};
 
 use std::sync::Arc;
 
 /// Client api of Nacos Config.
 #[pyclass(module = "nacos_sdk_rust_binding_py")]
 pub struct NacosConfigClient {
-    pub(crate) inner: Arc<dyn nacos_sdk::api::config::ConfigService + Send + Sync + 'static>,
+    inner: nacos_sdk::api::config::ConfigService,
 }
 
 #[pymethods]
@@ -61,7 +61,7 @@ impl NacosConfigClient {
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(NacosConfigClient {
-            inner: Arc::new(config_service),
+            inner: config_service,
         })
     }
 

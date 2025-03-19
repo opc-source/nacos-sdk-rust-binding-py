@@ -1,14 +1,14 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python, ToPyObject};
+use pyo3::{PyAny, PyErr, PyObject, PyResult, Python, ToPyObject, pyclass, pymethods};
 
 use std::sync::Arc;
 
 /// Client api of Nacos Naming.
 #[pyclass(module = "nacos_sdk_rust_binding_py")]
 pub struct NacosNamingClient {
-    inner: Arc<dyn nacos_sdk::api::naming::NamingService + Send + Sync + 'static>,
+    inner: nacos_sdk::api::naming::NamingService,
 }
 
 #[pymethods]
@@ -65,7 +65,7 @@ impl NacosNamingClient {
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(NacosNamingClient {
-            inner: Arc::new(naming_service),
+            inner: naming_service,
         })
     }
 

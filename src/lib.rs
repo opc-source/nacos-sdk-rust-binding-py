@@ -21,34 +21,29 @@ fn nacos_sdk_rust_binding_py(_py: Python, m: &PyModule) -> PyResult<()> {
     Ok(())
 }
 
-lazy_static::lazy_static! {
-    static ref LOG_GUARD: tracing_appender::non_blocking::WorkerGuard = {
-      use std::str::FromStr;
-      use tracing_subscriber::filter::LevelFilter;
-      let log_level = match std::env::var("NACOS_CLIENT_LOGGER_LEVEL") {
-        Ok(level) => LevelFilter::from_str(&level).unwrap_or(LevelFilter::INFO),
-        Err(_) => LevelFilter::INFO,
-      };
+static LOG_GUARD: std::sync::LazyLock<tracing_appender::non_blocking::WorkerGuard> =
+    std::sync::LazyLock::new(|| {
+        use std::str::FromStr;
+        use tracing_subscriber::filter::LevelFilter;
+        let log_level = match std::env::var("NACOS_CLIENT_LOGGER_LEVEL") {
+            Ok(level) => LevelFilter::from_str(&level).unwrap_or(LevelFilter::INFO),
+            Err(_) => LevelFilter::INFO,
+        };
 
-      let home_dir = match std::env::var("HOME") {
-        Ok(dir) => dir,
-        Err(_) => "/tmp".to_string(),
-      };
-      let file_appender = tracing_appender::rolling::daily(home_dir + "/logs/nacos", "nacos.log");
-      let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+        let home_dir = std::env::var("HOME").unwrap_or_else(|_| "/tmp".to_string());
+        let file_appender = tracing_appender::rolling::daily(home_dir + "/logs/nacos", "nacos.log");
+        let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
-      tracing_subscriber::fmt()
-        .with_writer(non_blocking)
-        // .with_timer(tracing_subscriber::fmt::time::LocalTime::rfc_3339()) // occur `<unknown time>`
-        .with_thread_names(true)
-        .with_thread_ids(true)
-        .with_max_level(log_level)
-        .init();
+        tracing_subscriber::fmt()
+            .with_writer(non_blocking)
+            // .with_timer(tracing_subscriber::fmt::time::LocalTime::rfc_3339()) // occur `<unknown time>`
+            .with_thread_names(true)
+            .with_thread_ids(true)
+            .with_max_level(log_level)
+            .init();
 
-      guard
-    };
-
-}
+        guard
+    });
 
 /// log print to console or file
 fn init_logger() -> &'static tracing_appender::non_blocking::WorkerGuard {
