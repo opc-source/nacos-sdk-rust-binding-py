@@ -1,7 +1,8 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{PyAny, PyErr, PyObject, PyResult, Python, ToPyObject, pyclass, pymethods};
+use pyo3::types::PyAnyMethods;
+use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 
 use std::sync::Arc;
 
@@ -197,13 +198,12 @@ impl NacosNamingClient {
     /// Add NacosNamingEventListener callback func, which listen the instance change.
     /// If it fails, pay attention to err
     #[pyo3(signature = (service_name, group, clusters, listener))]
-    pub fn subscribe(
+    pub fn subscribe<'p>(
         &self,
-        py: Python,
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &PyAny, // PyFunction arg: Vec<NacosServiceInstance>
+        listener: Bound<'p, PyAny>, // PyFunction arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         if !listener.is_callable() {
             return Err(PyErr::new::<PyValueError, _>(
@@ -215,7 +215,7 @@ impl NacosNamingClient {
             Some(group),
             clusters.unwrap_or_default(),
             Arc::new(NacosNamingEventListener {
-                func: Arc::new(listener.to_object(py)),
+                func: Arc::new(listener.into()),
             }),
         );
         futures::executor::block_on(future)
@@ -228,20 +228,19 @@ impl NacosNamingClient {
     /// Users maybe do not need it? Not removing the subscription is not a big problem, Sorry!
     #[pyo3(signature = (service_name, group, clusters, listener))]
     #[allow(unused_variables)]
-    pub fn un_subscribe(
+    pub fn un_subscribe<'p>(
         &self,
-        py: Python,
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &PyAny, // PyFunction arg: Vec<NacosServiceInstance>
+        listener: Bound<'p, PyAny>, // PyFunction arg: Vec<NacosServiceInstance>
     ) -> PyResult<()> {
         Ok(())
     }
 }
 
 pub(crate) struct NacosNamingEventListener {
-    pub(crate) func: Arc<PyObject>,
+    pub(crate) func: Arc<Py<PyAny>>,
 }
 
 impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
@@ -258,7 +257,7 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
             .collect();
 
         // call PyFunction with args
-        let _ = Python::with_gil(|py| -> PyResult<()> {
+        let _ = Python::attach(|py| -> PyResult<()> {
             let _ = self.func.call(py, (ffi_instances,), None);
             Ok(())
         });

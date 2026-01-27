@@ -1,8 +1,9 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{PyAny, PyErr, PyResult, Python, ToPyObject, pyclass, pymethods};
-use pyo3_asyncio::tokio::future_into_py;
+use pyo3::types::PyAnyMethods;
+use pyo3::{Bound, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
+use pyo3_async_runtimes::tokio::future_into_py;
 
 use std::sync::Arc;
 
@@ -83,7 +84,7 @@ impl AsyncNacosNamingClient {
         service_name: String,
         group: String,
         service_instance: NacosServiceInstance,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             this.register_instance(
@@ -104,7 +105,7 @@ impl AsyncNacosNamingClient {
         service_name: String,
         group: String,
         service_instance: NacosServiceInstance,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             this.deregister_instance(
@@ -125,7 +126,7 @@ impl AsyncNacosNamingClient {
         service_name: String,
         group: String,
         service_instances: Vec<NacosServiceInstance>,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             let rust_instances = service_instances
@@ -147,7 +148,7 @@ impl AsyncNacosNamingClient {
         group: String,
         clusters: Option<Vec<String>>,
         subscribe: Option<bool>,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             let rust_instances = this
@@ -177,7 +178,7 @@ impl AsyncNacosNamingClient {
         clusters: Option<Vec<String>>,
         subscribe: Option<bool>,
         healthy: Option<bool>,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             let rust_instances = this
@@ -206,7 +207,7 @@ impl AsyncNacosNamingClient {
         group: String,
         clusters: Option<Vec<String>>,
         subscribe: Option<bool>,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             let rust_instance = this
@@ -231,15 +232,15 @@ impl AsyncNacosNamingClient {
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &PyAny, // PyFunction arg: Vec<NacosServiceInstance>
-    ) -> PyResult<&'p PyAny> {
+        listener: Bound<'p, PyAny>, // PyFunction arg: Vec<NacosServiceInstance>
+    ) -> PyResult<Bound<'p, PyAny>> {
         if !listener.is_callable() {
             return Err(PyErr::new::<PyValueError, _>(
                 "Arg `listener` must be a callable",
             ));
         }
         let listen_wrap = Arc::new(NacosNamingEventListener {
-            func: Arc::new(listener.to_object(py)),
+            func: Arc::new(listener.into()),
         });
         let this = self.inner.clone();
 
@@ -267,8 +268,8 @@ impl AsyncNacosNamingClient {
         service_name: String,
         group: String,
         clusters: Option<Vec<String>>,
-        listener: &PyAny, // PyFunction arg: Vec<NacosServiceInstance>
-    ) -> PyResult<&'p PyAny> {
+        listener: Bound<'p, PyAny>, // PyFunction arg: Vec<NacosServiceInstance>
+    ) -> PyResult<Bound<'p, PyAny>> {
         future_into_py(py, async move { Ok(()) })
     }
 }

@@ -1,7 +1,8 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{PyAny, PyErr, PyObject, PyResult, Python, ToPyObject, pyclass, pymethods};
+use pyo3::types::PyAnyMethods;
+use pyo3::{Bound, Py, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
 
 use std::sync::Arc;
 
@@ -105,12 +106,11 @@ impl NacosConfigClient {
     /// Add NacosConfigChangeListener callback func, which listen the config change.
     /// If it fails, pay attention to err
     #[pyo3(signature = (data_id, group, listener))]
-    pub fn add_listener(
+    pub fn add_listener<'p>(
         &self,
-        py: Python,
         data_id: String,
         group: String,
-        listener: &PyAny, // PyFunction arg: <NacosConfigResponse>
+        listener: Bound<'p, PyAny>, // PyFunction arg: <NacosConfigResponse>
     ) -> PyResult<()> {
         if !listener.is_callable() {
             return Err(PyErr::new::<PyValueError, _>(
@@ -121,7 +121,7 @@ impl NacosConfigClient {
             data_id,
             group,
             Arc::new(NacosConfigChangeListener {
-                func: Arc::new(listener.to_object(py)),
+                func: Arc::new(listener.into()),
             }),
         );
         futures::executor::block_on(future)
@@ -134,12 +134,11 @@ impl NacosConfigClient {
     /// Users maybe do not need it? Not removing the listener is not a big problem, Sorry!
     #[pyo3(signature = (data_id, group, listener))]
     #[allow(unused_variables)]
-    pub fn remove_listener(
+    pub fn remove_listener<'p>(
         &self,
-        py: Python,
         data_id: String,
         group: String,
-        listener: &PyAny, // PyFunction arg: <NacosConfigResponse>
+        listener: Bound<'p, PyAny>, // PyFunction arg: <NacosConfigResponse>
     ) -> PyResult<()> {
         Ok(())
     }
@@ -168,7 +167,7 @@ pub struct NacosConfigResponse {
 }
 
 pub(crate) struct NacosConfigChangeListener {
-    pub(crate) func: Arc<PyObject>,
+    pub(crate) func: Arc<Py<PyAny>>,
 }
 
 impl nacos_sdk::api::config::ConfigChangeListener for NacosConfigChangeListener {
@@ -176,7 +175,7 @@ impl nacos_sdk::api::config::ConfigChangeListener for NacosConfigChangeListener 
         let ffi_conf_resp = transfer_conf_resp(config_resp);
 
         // call PyFunction with args
-        let _ = Python::with_gil(|py| -> PyResult<()> {
+        let _ = Python::attach(|py| -> PyResult<()> {
             let _ = self.func.call(py, (ffi_conf_resp,), None);
             Ok(())
         });

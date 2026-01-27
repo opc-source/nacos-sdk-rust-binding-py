@@ -1,8 +1,9 @@
 #![deny(clippy::all)]
 
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
-use pyo3::{PyAny, PyErr, PyResult, Python, ToPyObject, pyclass, pymethods};
-use pyo3_asyncio::tokio::future_into_py;
+use pyo3::types::PyAnyMethods;
+use pyo3::{Bound, PyAny, PyErr, PyResult, Python, pyclass, pymethods};
+use pyo3_async_runtimes::tokio::future_into_py;
 
 use std::sync::Arc;
 
@@ -75,7 +76,7 @@ impl AsyncNacosConfigClient {
         py: Python<'p>,
         data_id: String,
         group: String,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             let config_resp = this
@@ -93,7 +94,7 @@ impl AsyncNacosConfigClient {
         py: Python<'p>,
         data_id: String,
         group: String,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             let config_resp = this
@@ -112,7 +113,7 @@ impl AsyncNacosConfigClient {
         data_id: String,
         group: String,
         content: String,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             this.publish_config(data_id, group, content, None)
@@ -128,7 +129,7 @@ impl AsyncNacosConfigClient {
         py: Python<'p>,
         data_id: String,
         group: String,
-    ) -> PyResult<&'p PyAny> {
+    ) -> PyResult<Bound<'p, PyAny>> {
         let this = self.inner.clone();
         future_into_py(py, async move {
             this.remove_config(data_id, group)
@@ -145,15 +146,15 @@ impl AsyncNacosConfigClient {
         py: Python<'p>,
         data_id: String,
         group: String,
-        listener: &PyAny, // PyFunction arg: <NacosConfigResponse>
-    ) -> PyResult<&'p PyAny> {
+        listener: Bound<'p, PyAny>, // PyFunction arg: <NacosConfigResponse>
+    ) -> PyResult<Bound<'p, PyAny>> {
         if !listener.is_callable() {
             return Err(PyErr::new::<PyValueError, _>(
                 "Arg `listener` must be a callable",
             ));
         }
         let listen_wrap = Arc::new(NacosConfigChangeListener {
-            func: Arc::new(listener.to_object(py)),
+            func: Arc::new(listener.into()),
         });
         let this = self.inner.clone();
         future_into_py(py, async move {
@@ -174,8 +175,8 @@ impl AsyncNacosConfigClient {
         py: Python<'p>,
         data_id: String,
         group: String,
-        listener: &PyAny, // PyFunction arg: <NacosConfigResponse>
-    ) -> PyResult<&'p PyAny> {
+        listener: Bound<'p, PyAny>, // PyFunction arg: <NacosConfigResponse>
+    ) -> PyResult<Bound<'p, PyAny>> {
         future_into_py(py, async { Ok(()) })
     }
 }
