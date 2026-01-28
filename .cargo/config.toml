@@ -12,6 +12,3 @@ linker = "s390x-linux-gnu-gcc"
 
 [target.powerpc64le-unknown-linux-gnu]
 linker = "powerpc64le-linux-gnu-gcc"
-
-[build]
-rustflags = ["-C", "target-feature=+crt-static"]

@@ -29,7 +29,8 @@ jobs:
           - target: x86_64
             manylinux: auto
           - target: x86
-            manylinux: auto
+            manylinux: '2_28'
+            rustflags: "-C target-feature=-crt-static"
           - target: aarch64
             manylinux: '2_28'
           - target: armv7
@@ -44,6 +45,9 @@ jobs:
         run: |
           echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> $GITHUB_ENV
           echo "RUST_BACKTRACE=1" >> $GITHUB_ENV
+          if [ -n "${{ matrix.rustflags }}" ]; then
+            echo "RUSTFLAGS=${{ matrix.rustflags }}" >> $GITHUB_ENV
+          fi
       - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
