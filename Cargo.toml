@@ -1,6 +1,6 @@
 [package]
 name = "nacos-sdk-rust-binding-py"
-version = "0.5.2"
+version = "0.5.3"
 edition = "2024"
 license = "Apache-2.0"
 publish = false
@@ -23,9 +23,5 @@ pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }
 # for block api
 futures = { version = "0.3", default-features = false, features = ["executor"] }
 
-nacos-sdk = { version = "0.5.2", features = ["default", "auth-by-aliyun"] }
-#nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", branch = "main", features = ["default", "auth-by-aliyun"] }
-
-tracing-subscriber = { version = "0.3", features = ["default"] }
-#tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time"] } # occur `<unknown time>`
-tracing-appender = "0.2"
+#nacos-sdk = { version = "0.5.3", features = ["default", "auth-by-aliyun", "tracing-log"] }
+nacos-sdk = { git = "https://github.com/nacos-group/nacos-sdk-rust.git", branch = "main", features = ["default", "auth-by-aliyun", "tracing-log"] }

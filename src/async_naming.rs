@@ -23,9 +23,6 @@ impl AsyncNacosNamingClient {
     /// Build a Naming Client.
     #[new]
     pub fn new(client_options: crate::ClientOptions) -> PyResult<Self> {
-        // print to console or file
-        let _ = crate::init_logger();
-
         let props = nacos_sdk::api::props::ClientProps::new()
             .server_addr(client_options.server_addr)
             .namespace(client_options.namespace)
