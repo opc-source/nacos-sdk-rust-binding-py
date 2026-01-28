@@ -43,6 +43,14 @@ jobs:
         run: |
           echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> $GITHUB_ENV
           echo "RUST_BACKTRACE=1" >> $GITHUB_ENV
+          # Set ARM architecture flags for ring crate compilation
+          if [[ "${{ matrix.platform.target }}" == "aarch64" ]]; then
+            echo "CFLAGS_aarch64_unknown_linux_gnu=-D__ARM_ARCH=8" >> $GITHUB_ENV
+            echo "CXXFLAGS_aarch64_unknown_linux_gnu=-D__ARM_ARCH=8" >> $GITHUB_ENV
+          elif [[ "${{ matrix.platform.target }}" == "armv7" ]]; then
+            echo "CFLAGS_armv7_unknown_linux_gnueabihf=-D__ARM_ARCH=7" >> $GITHUB_ENV
+            echo "CXXFLAGS_armv7_unknown_linux_gnueabihf=-D__ARM_ARCH=7" >> $GITHUB_ENV
+          fi
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
