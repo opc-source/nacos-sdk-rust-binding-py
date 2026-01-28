@@ -1,5 +1,17 @@
 [target.'cfg(all(target_arch = "x86_64", target_os = "linux"))']
 rustflags = ["-C", "link-arg=-lgcc"]
 
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"
+
+[target.armv7-unknown-linux-gnueabihf]
+linker = "arm-linux-gnueabihf-gcc"
+
+[target.s390x-unknown-linux-gnu]
+linker = "s390x-linux-gnu-gcc"
+
+[target.powerpc64le-unknown-linux-gnu]
+linker = "powerpc64le-linux-gnu-gcc"
+
 [build]
 rustflags = ["-C", "target-feature=+crt-static"]
