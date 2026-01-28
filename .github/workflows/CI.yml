@@ -10,6 +10,7 @@ on:
     branches:
       - main
       - master
+      - ci-*
     tags:
       - '*'
   pull_request:
@@ -24,22 +25,50 @@ jobs:
     strategy:
       matrix:
         target: [x86_64, x86, aarch64, armv7, s390x, ppc64le]
+        include:
+          - target: x86_64
+            manylinux: auto
+            container: quay.io/pypa/manylinux2014_x86_64:latest
+          - target: x86
+            manylinux: auto
+            container: quay.io/pypa/manylinux2014_i686:latest
+          - target: aarch64
+            manylinux: '2_28'
+          - target: armv7
+            manylinux: '2_28'
+          - target: s390x
+            manylinux: '2_28'
+          - target: ppc64le
+            manylinux: '2_28'
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Set environment variables for ring compilation
+        run: |
+          echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> $GITHUB_ENV
+          echo "RUST_BACKTRACE=1" >> $GITHUB_ENV
+          if [ -n "${{ matrix.rustflags }}" ]; then
+            echo "RUSTFLAGS=${{ matrix.rustflags }}" >> $GITHUB_ENV
+          fi
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
-          manylinux: auto
+          manylinux: ${{ matrix.manylinux }}
+          docker-options: |
+            -e CARGO_NET_GIT_FETCH_WITH_CLI=true
+            -e RUST_BACKTRACE=1
+        env:
+          CARGO_NET_GIT_FETCH_WITH_CLI: true
+          RUST_BACKTRACE: 1
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-linux-${{ matrix.target }}
           path: dist
 
   windows:
@@ -48,13 +77,13 @@ jobs:
       matrix:
         target: [x64, x86]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           architecture: ${{ matrix.target }}
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           args: --release --out dist --find-interpreter
@@ -62,7 +91,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-windows-${{ matrix.target }}
           path: dist
 
   macos:
@@ -71,12 +100,12 @@ jobs:
       matrix:
         target: [x86_64, aarch64]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Build wheels
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           target: ${{ matrix.target }}
           args: --release --out dist --find-interpreter
@@ -84,22 +113,22 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-macos-${{ matrix.target }}
           path: dist
 
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build sdist
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         with:
           command: sdist
           args: --out dist
       - name: Upload sdist
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-sdist
           path: dist
 
   release:
@@ -108,11 +137,14 @@ jobs:
     if: "startsWith(github.ref, 'refs/tags/')"
     needs: [linux, windows, macos, sdist]
     steps:
-      - uses: actions/download-artifact@v3
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: wheels
+          pattern: wheels-*
+          path: dist/
+          merge-multiple: true
       - name: Publish to PyPI
-        uses: PyO3/maturin-action@v1
+        uses: PyO3/maturin-action@v1.44.0
         env:
           MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         with:
