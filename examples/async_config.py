@@ -3,7 +3,7 @@
 import asyncio
 import nacos_sdk_rust_binding_py as nacos
 
-client_options = nacos.ClientOptions("127.0.0.1:8848", "love", "simple_app_py", "nacos", "nacos", None, None, None, None, None)
+client_options = nacos.ClientOptions("127.0.0.1:8848", "love", "simple_app_py", "nacos", "nacos")
 
 # 一般大部分情况下，应用下仅需一个客户端，而且需要长期持有直至应用停止。
 # 因为它内部会初始化与服务端的长链接，后续的数据交互及服务变更等订阅，都是实时地通过长链接告知客户端的。

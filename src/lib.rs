@@ -59,6 +59,7 @@ pub struct ClientOptions {
 #[pymethods]
 impl ClientOptions {
     #[new]
+    #[pyo3(signature = (server_addr, namespace, app_name=None, username=None, password=None, access_key=None, access_secret=None, signature_region_id=None, naming_push_empty_protection=None, naming_load_cache_at_start=None))]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         server_addr: String,

@@ -123,6 +123,7 @@ impl NacosNamingClient {
 
     /// Get all instances by service and group. default cluster=[], subscribe=true.
     /// If it fails, pay attention to err
+    #[pyo3(signature = (service_name, group, clusters=None, subscribe=None))]
     pub fn get_all_instances(
         &self,
         service_name: String,
@@ -147,6 +148,7 @@ impl NacosNamingClient {
 
     /// Select instances whether healthy or not. default cluster=[], subscribe=true, healthy=true.
     /// If it fails, pay attention to err
+    #[pyo3(signature = (service_name, group, clusters=None, subscribe=None, healthy=None))]
     pub fn select_instances(
         &self,
         service_name: String,
@@ -173,6 +175,7 @@ impl NacosNamingClient {
 
     /// Select one healthy instance. default cluster=[], subscribe=true.
     /// If it fails, pay attention to err
+    #[pyo3(signature = (service_name, group, clusters=None, subscribe=None))]
     pub fn select_one_healthy_instance(
         &self,
         service_name: String,
@@ -299,6 +302,7 @@ pub struct NacosServiceInstance {
 #[pymethods]
 impl NacosServiceInstance {
     #[new]
+    #[pyo3(signature = (ip, port, weight=None, healthy=None, enabled=None, ephemeral=None, cluster_name=None, service_name=None, metadata=None))]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         ip: String,

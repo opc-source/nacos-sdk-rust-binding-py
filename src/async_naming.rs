@@ -138,6 +138,7 @@ impl AsyncNacosNamingClient {
 
     /// Get all instances by service and group. default cluster=[], subscribe=true.
     /// If it fails, pay attention to err
+    #[pyo3(signature = (service_name, group, clusters=None, subscribe=None))]
     pub fn get_all_instances<'p>(
         &self,
         py: Python<'p>,
@@ -167,6 +168,7 @@ impl AsyncNacosNamingClient {
 
     /// Select instances whether healthy or not. default cluster=[], subscribe=true, healthy=true.
     /// If it fails, pay attention to err
+    #[pyo3(signature = (service_name, group, clusters=None, subscribe=None, healthy=None))]
     pub fn select_instances<'p>(
         &self,
         py: Python<'p>,
@@ -197,6 +199,7 @@ impl AsyncNacosNamingClient {
 
     /// Select one healthy instance. default cluster=[], subscribe=true.
     /// If it fails, pay attention to err
+    #[pyo3(signature = (service_name, group, clusters=None, subscribe=None))]
     pub fn select_one_healthy_instance<'p>(
         &self,
         py: Python<'p>,

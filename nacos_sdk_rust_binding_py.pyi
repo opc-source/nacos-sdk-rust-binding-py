@@ -5,14 +5,14 @@ class ClientOptions:
         self,
         server_addr: str,
         namespace: str,
-        app_name: Optional[str],
-        username: Optional[str],
-        password: Optional[str],
-        access_key: Optional[str],
-        access_secret: Optional[str],
-        signature_region_id: Optional[str],
-        naming_push_empty_protection: Optional[bool],
-        naming_load_cache_at_start: Optional[bool],
+        app_name: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        access_key: Optional[str] = None,
+        access_secret: Optional[str] = None,
+        signature_region_id: Optional[str] = None,
+        naming_push_empty_protection: Optional[bool] = None,
+        naming_load_cache_at_start: Optional[bool] = None,
     ) -> None: ...
 
 class NacosConfigResponse:
@@ -90,13 +90,13 @@ class NacosServiceInstance:
         self,
         ip: str,
         port: int,
-        weight: Optional[float],
-        healthy: Optional[bool],
-        enabled: Optional[bool],
-        ephemeral: Optional[bool],
-        cluster_name: Optional[str],
-        service_name: Optional[str],
-        metadata: Optional[Dict[str, str]],
+        weight: Optional[float] = None,
+        healthy: Optional[bool] = None,
+        enabled: Optional[bool] = None,
+        ephemeral: Optional[bool] = None,
+        cluster_name: Optional[str] = None,
+        service_name: Optional[str] = None,
+        metadata: Optional[Dict[str, str]] = None,
     ) -> None: ...
 
 class NacosNamingClient:
@@ -129,8 +129,8 @@ class NacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
-        subscribe: Optional[bool],
+        clusters: Optional[List[str]] = None,
+        subscribe: Optional[bool] = None,
     ) -> List[NacosServiceInstance]:
         """Get all instances by service and group. default cluster=[], subscribe=true. If it fails, pay attention to err"""
 
@@ -140,9 +140,9 @@ class NacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
-        subscribe: Optional[bool],
-        healthy: Optional[bool],
+        clusters: Optional[List[str]] = None,
+        subscribe: Optional[bool] = None,
+        healthy: Optional[bool] = None,
     ) -> List[NacosServiceInstance]:
         """Select instances whether healthy or not. default cluster=[], subscribe=true, healthy=true. If it fails, pay attention to err"""
 
@@ -152,8 +152,8 @@ class NacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
-        subscribe: Optional[bool],
+        clusters: Optional[List[str]] = None,
+        subscribe: Optional[bool] = None,
     ) -> NacosServiceInstance:
         """Select one healthy instance. default cluster=[], subscribe=true. If it fails, pay attention to err"""
 
@@ -163,7 +163,7 @@ class NacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
+        clusters: Optional[List[str]] = None,
         listener: Callable[[NacosConfigResponse], NoReturn],
     ) -> NacosServiceInstance:
         """Add NacosNamingEventListener callback func, which listen the instance change. If it fails, pay attention to err"""
@@ -200,8 +200,8 @@ class AsyncNacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
-        subscribe: Optional[bool],
+        clusters: Optional[List[str]] = None,
+        subscribe: Optional[bool] = None,
     ) -> List[NacosServiceInstance]:
         """Get all instances by service and group. default cluster=[], subscribe=true. If it fails, pay attention to err"""
 
@@ -211,9 +211,9 @@ class AsyncNacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
-        subscribe: Optional[bool],
-        healthy: Optional[bool],
+        clusters: Optional[List[str]] = None,
+        subscribe: Optional[bool] = None,
+        healthy: Optional[bool] = None,
     ) -> List[NacosServiceInstance]:
         """Select instances whether healthy or not. default cluster=[], subscribe=true, healthy=true. If it fails, pay attention to err"""
 
@@ -223,8 +223,8 @@ class AsyncNacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
-        subscribe: Optional[bool],
+        clusters: Optional[List[str]] = None,
+        subscribe: Optional[bool] = None,
     ) -> NacosServiceInstance:
         """Select one healthy instance. default cluster=[], subscribe=true. If it fails, pay attention to err"""
 
@@ -234,7 +234,7 @@ class AsyncNacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]],
+        clusters: Optional[List[str]] = None,
         listener: Callable[[NacosConfigResponse], NoReturn],
     ) -> NacosServiceInstance:
         """Add NacosNamingEventListener callback func, which listen the instance change. If it fails, pay attention to err"""
