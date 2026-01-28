@@ -1,0 +1,5 @@
+[target.'cfg(all(target_arch = "x86_64", target_os = "linux"))']
+rustflags = ["-C", "link-arg=-lgcc"]
+
+[build]
+rustflags = ["-C", "target-feature=+crt-static"]
