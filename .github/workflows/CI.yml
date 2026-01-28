@@ -39,6 +39,10 @@ jobs:
             target: ppc64le
     steps:
       - uses: actions/checkout@v6
+      - name: Set environment variables for ring compilation
+        run: |
+          echo "CARGO_NET_GIT_FETCH_WITH_CLI=true" >> $GITHUB_ENV
+          echo "RUST_BACKTRACE=1" >> $GITHUB_ENV
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
