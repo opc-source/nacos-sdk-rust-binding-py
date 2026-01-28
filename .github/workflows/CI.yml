@@ -28,9 +28,10 @@ jobs:
         include:
           - target: x86_64
             manylinux: auto
+            container: quay.io/pypa/manylinux2014_x86_64:latest
           - target: x86
-            manylinux: '2_28'
-            rustflags: "-C target-feature=-crt-static"
+            manylinux: auto
+            container: quay.io/pypa/manylinux2014_i686:latest
           - target: aarch64
             manylinux: '2_28'
           - target: armv7
@@ -58,6 +59,12 @@ jobs:
           args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: ${{ matrix.manylinux }}
+          docker-options: |
+            -e CARGO_NET_GIT_FETCH_WITH_CLI=true
+            -e RUST_BACKTRACE=1
+        env:
+          CARGO_NET_GIT_FETCH_WITH_CLI: true
+          RUST_BACKTRACE: 1
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
