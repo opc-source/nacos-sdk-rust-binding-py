@@ -27,5 +27,7 @@ test-crates/wheels/
 test-crates/targets/
 test-crates/venvs/
 
+/.claude/*.local.*
+
 # Generated docs
 docs

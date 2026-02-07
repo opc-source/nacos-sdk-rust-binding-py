@@ -13,6 +13,7 @@ class ClientOptions:
         signature_region_id: Optional[str] = None,
         naming_push_empty_protection: Optional[bool] = None,
         naming_load_cache_at_start: Optional[bool] = None,
+        config_load_cache_at_start: Optional[bool] = None,
     ) -> None: ...
 
 class NacosConfigResponse:
@@ -163,7 +164,7 @@ class NacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]] = None,
+        clusters: Optional[List[str]],
         listener: Callable[[NacosConfigResponse], NoReturn],
     ) -> NacosServiceInstance:
         """Add NacosNamingEventListener callback func, which listen the instance change. If it fails, pay attention to err"""
@@ -234,7 +235,7 @@ class AsyncNacosNamingClient:
         self,
         service_name: str,
         group: str,
-        clusters: Optional[List[str]] = None,
+        clusters: Optional[List[str]],
         listener: Callable[[NacosConfigResponse], NoReturn],
     ) -> NacosServiceInstance:
         """Add NacosNamingEventListener callback func, which listen the instance change. If it fails, pay attention to err"""

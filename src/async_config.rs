@@ -27,7 +27,8 @@ impl AsyncNacosConfigClient {
                 client_options
                     .app_name
                     .unwrap_or(nacos_sdk::api::constants::UNKNOWN.to_string()),
-            );
+            )
+            .config_load_cache_at_start(client_options.config_load_cache_at_start.unwrap_or(false));
 
         // need enable_auth_plugin_http with username & password
         let is_enable_auth_http =
@@ -57,8 +58,7 @@ impl AsyncNacosConfigClient {
             nacos_sdk::api::config::ConfigServiceBuilder::new(props)
         };
 
-        let config_service = config_service_builder
-            .build()
+        let config_service = crate::block_on(config_service_builder.build())
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(Self {

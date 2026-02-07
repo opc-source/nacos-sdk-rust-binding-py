@@ -58,8 +58,7 @@ impl NacosNamingClient {
             nacos_sdk::api::naming::NamingServiceBuilder::new(props)
         };
 
-        let naming_service = naming_service_builder
-            .build()
+        let naming_service = crate::block_on(naming_service_builder.build())
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(NacosNamingClient {
@@ -80,7 +79,7 @@ impl NacosNamingClient {
             Some(group),
             transfer_ffi_instance_to_rust(&service_instance),
         );
-        futures::executor::block_on(future)
+        crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -97,7 +96,7 @@ impl NacosNamingClient {
             Some(group),
             transfer_ffi_instance_to_rust(&service_instance),
         );
-        futures::executor::block_on(future)
+        crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -117,7 +116,7 @@ impl NacosNamingClient {
         let future = self
             .inner
             .batch_register_instance(service_name, Some(group), rust_instances);
-        futures::executor::block_on(future)
+        crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -137,7 +136,7 @@ impl NacosNamingClient {
             clusters.unwrap_or_default(),
             subscribe.unwrap_or(true),
         );
-        let rust_instances = futures::executor::block_on(future)
+        let rust_instances = crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(rust_instances
@@ -164,7 +163,7 @@ impl NacosNamingClient {
             subscribe.unwrap_or(true),
             healthy.unwrap_or(true),
         );
-        let rust_instances = futures::executor::block_on(future)
+        let rust_instances = crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(rust_instances
@@ -189,7 +188,7 @@ impl NacosNamingClient {
             clusters.unwrap_or_default(),
             subscribe.unwrap_or(true),
         );
-        let rust_instance = futures::executor::block_on(future)
+        let rust_instance = crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(transfer_rust_instance_to_ffi(&rust_instance))
@@ -218,7 +217,7 @@ impl NacosNamingClient {
                 func: Arc::new(listener.into()),
             }),
         );
-        futures::executor::block_on(future)
+        crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
         Ok(())
     }

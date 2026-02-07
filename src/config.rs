@@ -24,7 +24,8 @@ impl NacosConfigClient {
                 client_options
                     .app_name
                     .unwrap_or(nacos_sdk::api::constants::UNKNOWN.to_string()),
-            );
+            )
+            .config_load_cache_at_start(client_options.config_load_cache_at_start.unwrap_or(false));
 
         // need enable_auth_plugin_http with username & password
         let is_enable_auth_http =
@@ -54,8 +55,7 @@ impl NacosConfigClient {
             nacos_sdk::api::config::ConfigServiceBuilder::new(props)
         };
 
-        let config_service = config_service_builder
-            .build()
+        let config_service = crate::block_on(config_service_builder.build())
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(NacosConfigClient {
@@ -74,7 +74,7 @@ impl NacosConfigClient {
     /// If it fails, pay attention to err
     pub fn get_config_resp(&self, data_id: String, group: String) -> PyResult<NacosConfigResponse> {
         let future = self.inner.get_config(data_id, group);
-        let config_resp = futures::executor::block_on(future)
+        let config_resp = crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
         Ok(transfer_conf_resp(config_resp))
     }
@@ -88,7 +88,7 @@ impl NacosConfigClient {
         content: String,
     ) -> PyResult<bool> {
         let future = self.inner.publish_config(data_id, group, content, None);
-        futures::executor::block_on(future)
+        crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -96,7 +96,7 @@ impl NacosConfigClient {
     /// If it fails, pay attention to err
     pub fn remove_config(&self, data_id: String, group: String) -> PyResult<bool> {
         let future = self.inner.remove_config(data_id, group);
-        futures::executor::block_on(future)
+        crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))
     }
 
@@ -121,7 +121,7 @@ impl NacosConfigClient {
                 func: Arc::new(listener.into()),
             }),
         );
-        futures::executor::block_on(future)
+        crate::block_on(future)
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
         Ok(())
     }

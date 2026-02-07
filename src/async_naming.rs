@@ -64,8 +64,7 @@ impl AsyncNacosNamingClient {
             nacos_sdk::api::naming::NamingServiceBuilder::new(props)
         };
 
-        let naming_service = naming_service_builder
-            .build()
+        let naming_service = crate::block_on(naming_service_builder.build())
             .map_err(|nacos_err| PyRuntimeError::new_err(format!("{:?}", &nacos_err)))?;
 
         Ok(Self {

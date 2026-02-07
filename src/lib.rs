@@ -1,4 +1,26 @@
 use pyo3::prelude::*;
+use std::sync::OnceLock;
+
+/// Global Tokio runtime for blocking operations.
+static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
+
+/// Get or initialize the global Tokio runtime.
+pub fn get_runtime() -> &'static tokio::runtime::Runtime {
+    RT.get_or_init(|| {
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Failed to create Tokio runtime")
+    })
+}
+
+/// Block on a future using the global Tokio runtime.
+pub fn block_on<F>(future: F) -> F::Output
+where
+    F: std::future::Future,
+{
+    get_runtime().block_on(future)
+}
 
 /// Formats the sum of two numbers as string.
 #[pyfunction]
@@ -54,12 +76,15 @@ pub struct ClientOptions {
     /// naming load_cache_at_start, default false
     #[pyo3(set, get)]
     pub naming_load_cache_at_start: Option<bool>,
+    /// config load_cache_at_start, default false
+    #[pyo3(set, get)]
+    pub config_load_cache_at_start: Option<bool>,
 }
 
 #[pymethods]
 impl ClientOptions {
     #[new]
-    #[pyo3(signature = (server_addr, namespace, app_name=None, username=None, password=None, access_key=None, access_secret=None, signature_region_id=None, naming_push_empty_protection=None, naming_load_cache_at_start=None))]
+    #[pyo3(signature = (server_addr, namespace, app_name=None, username=None, password=None, access_key=None, access_secret=None, signature_region_id=None, naming_push_empty_protection=None, naming_load_cache_at_start=None, config_load_cache_at_start=None))]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         server_addr: String,
@@ -72,6 +97,7 @@ impl ClientOptions {
         signature_region_id: Option<String>,
         naming_push_empty_protection: Option<bool>,
         naming_load_cache_at_start: Option<bool>,
+        config_load_cache_at_start: Option<bool>,
     ) -> PyResult<ClientOptions> {
         Ok(Self {
             server_addr,
@@ -84,6 +110,7 @@ impl ClientOptions {
             signature_region_id,
             naming_push_empty_protection,
             naming_load_cache_at_start,
+            config_load_cache_at_start,
         })
     }
 }
