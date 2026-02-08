@@ -1,25 +1,26 @@
 use pyo3::prelude::*;
-use std::sync::OnceLock;
+use std::cell::OnceCell;
 
-/// Global Tokio runtime for blocking operations.
-static RT: OnceLock<tokio::runtime::Runtime> = OnceLock::new();
-
-/// Get or initialize the global Tokio runtime.
-pub fn get_runtime() -> &'static tokio::runtime::Runtime {
-    RT.get_or_init(|| {
-        tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .expect("Failed to create Tokio runtime")
-    })
+// Thread-local Tokio runtime for blocking operations.
+// Each OS thread has its own runtime to avoid contention between Python threads.
+thread_local! {
+    static RT: OnceCell<tokio::runtime::Runtime> = const { OnceCell::new() };
 }
 
-/// Block on a future using the global Tokio runtime.
+/// Block on a future using the thread-local Tokio runtime.
 pub fn block_on<F>(future: F) -> F::Output
 where
     F: std::future::Future,
 {
-    get_runtime().block_on(future)
+    RT.with(|rt| {
+        let runtime = rt.get_or_init(|| {
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .expect("Failed to create Tokio current-thread runtime")
+        });
+        runtime.block_on(future)
+    })
 }
 
 /// Formats the sum of two numbers as string.
