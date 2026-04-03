@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, NoReturn, Optional
+from typing import Callable, Dict, List, Optional
 
 class ClientOptions:
     def __init__(
@@ -52,7 +52,7 @@ class NacosConfigClient:
         self,
         data_id: str,
         group: str,
-        listener: Callable[[NacosConfigResponse], NoReturn],
+        listener: Callable[[NacosConfigResponse], None],
     ):
         """Add NacosConfigChangeListener callback func, which listen the config change. If it fails, pay attention to err"""
 
@@ -80,7 +80,7 @@ class AsyncNacosConfigClient:
         self,
         data_id: str,
         group: str,
-        listener: Callable[[NacosConfigResponse], NoReturn],
+        listener: Callable[[NacosConfigResponse], None],
     ):
         """Add NacosConfigChangeListener callback func, which listen the config change. If it fails, pay attention to err"""
 
@@ -165,7 +165,7 @@ class NacosNamingClient:
         service_name: str,
         group: str,
         clusters: Optional[List[str]],
-        listener: Callable[[NacosConfigResponse], NoReturn],
+        listener: Callable[[NacosServiceInstance], None],
     ) -> NacosServiceInstance:
         """Add NacosNamingEventListener callback func, which listen the instance change. If it fails, pay attention to err"""
 
@@ -236,7 +236,7 @@ class AsyncNacosNamingClient:
         service_name: str,
         group: str,
         clusters: Optional[List[str]],
-        listener: Callable[[NacosConfigResponse], NoReturn],
+        listener: Callable[[List[NacosServiceInstance]], None],
     ) -> NacosServiceInstance:
         """Add NacosNamingEventListener callback func, which listen the instance change. If it fails, pay attention to err"""
 
