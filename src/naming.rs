@@ -30,6 +30,12 @@ impl NacosNamingClient {
             )
             .naming_load_cache_at_start(client_options.naming_load_cache_at_start.unwrap_or(false));
 
+        let props = if let Some(ep) = client_options.endpoint {
+            props.endpoint(ep)
+        } else {
+            props
+        };
+
         // need enable_auth_plugin_http with username & password
         let is_enable_auth_http =
             client_options.username.is_some() && client_options.password.is_some();
@@ -263,7 +269,7 @@ impl nacos_sdk::api::naming::NamingEventListener for NacosNamingEventListener {
     }
 }
 
-#[pyclass(module = "nacos_sdk_rust_binding_py")]
+#[pyclass(module = "nacos_sdk_rust_binding_py", from_py_object)]
 #[derive(Clone)]
 pub struct NacosServiceInstance {
     /// Instance Id

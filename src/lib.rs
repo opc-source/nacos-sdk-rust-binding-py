@@ -44,7 +44,7 @@ fn nacos_sdk_rust_binding_py(m: Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
-#[pyclass(module = "nacos_sdk_rust_binding_py")]
+#[pyclass(module = "nacos_sdk_rust_binding_py", from_py_object)]
 #[derive(Clone)]
 pub struct ClientOptions {
     /// Server Addr, e.g. address:port[,address:port],...]
@@ -80,12 +80,20 @@ pub struct ClientOptions {
     /// config load_cache_at_start, default false
     #[pyo3(set, get)]
     pub config_load_cache_at_start: Option<bool>,
+    /// Endpoint for resolving server list dynamically.
+    /// This is used when you want Nacos client to fetch server addresses from a remote endpoint
+    /// instead of specifying server_addr directly.
+    /// - Full URL (e.g. "http://localhost:8080/nacos/serverlist") will be used as-is
+    /// - If just a hostname is provided (e.g. "localhost"), it will be expanded to "http://localhost:8080/nacos/serverlist"
+    /// Priority: endpoint > server_addr (endpoint takes precedence if both are set)
+    #[pyo3(set, get)]
+    pub endpoint: Option<String>,
 }
 
 #[pymethods]
 impl ClientOptions {
     #[new]
-    #[pyo3(signature = (server_addr, namespace, app_name=None, username=None, password=None, access_key=None, access_secret=None, signature_region_id=None, naming_push_empty_protection=None, naming_load_cache_at_start=None, config_load_cache_at_start=None))]
+    #[pyo3(signature = (server_addr, namespace, app_name=None, username=None, password=None, access_key=None, access_secret=None, signature_region_id=None, naming_push_empty_protection=None, naming_load_cache_at_start=None, config_load_cache_at_start=None, endpoint=None))]
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         server_addr: String,
@@ -99,6 +107,7 @@ impl ClientOptions {
         naming_push_empty_protection: Option<bool>,
         naming_load_cache_at_start: Option<bool>,
         config_load_cache_at_start: Option<bool>,
+        endpoint: Option<String>,
     ) -> PyResult<ClientOptions> {
         Ok(Self {
             server_addr,
@@ -112,6 +121,7 @@ impl ClientOptions {
             naming_push_empty_protection,
             naming_load_cache_at_start,
             config_load_cache_at_start,
+            endpoint,
         })
     }
 }

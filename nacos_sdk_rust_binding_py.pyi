@@ -14,6 +14,7 @@ class ClientOptions:
         naming_push_empty_protection: Optional[bool] = None,
         naming_load_cache_at_start: Optional[bool] = None,
         config_load_cache_at_start: Optional[bool] = None,
+        endpoint: Optional[str] = None,
     ) -> None: ...
 
 class NacosConfigResponse:
